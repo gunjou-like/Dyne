@@ -1,0 +1,16 @@
+[project]
+name = "dyne"
+version = "0.1.0"
+dependencies = [
+    "onnx>=1.14.0",
+    "numpy",
+    "click",  # CLI作成用ライブラリ
+    # CPU-only PyTorch: 単純に "torch" を追加します。
+    # 注意: pip で CPU ビルドのホイールを使う場合は次のコマンドを使ってください:
+    # pip install torch --index-url https://download.pytorch.org/whl/cpu
+    "torch",
+    # ONNX スクリプト化用
+    "onnxscript",
+]
+[project.scripts]
+dyne = "dyne.cli:main"
