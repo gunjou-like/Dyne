@@ -1,15 +1,40 @@
 # Dyne
 **Lightweight PINN Inference Toolchain for IoT/Edge/WASM**
 
-Dyne enables Physics-Informed Neural Networks (PINNs) inference on resource-constrained devices (ESP32, browser WASM, edge GPUs) through a 3-layer toolchain:
+# Dyne: Universal Physics Container & Distributed Runtime
 
-1. Compiler/Optimizer: ONNX model partitioning with PDE-aware logic – splits models by physical subdomains while preserving boundary continuity.
-2. Runtime: WASM inference engine + Boundary Sync Protocol for multi-device coordination.
-3. Visualization: Real-time mesh rendering of distributed simulations.
+**Deploy any Physics, Anywhere.**
 
-MVP splits 1 ONNX into 2 WASM modules running on dual browser canvases. Future: compressor plugins, on-device fine-tuning.
+Dyne is a lightweight toolchain that turns physics models—whether **Physics-Informed Neural Networks (PINNs)**, **Neural Operators**, or classical **Numerical Solvers**—into portable WebAssembly (WASM) actors.
 
-Powers Theme1 Physics-Aware Edge Runtime , Theme2 Physical Cluster Orchestrator (WASM on ESP32 clusters), and Theme5 Twinkernel. Demonstrates "safe AI control" – sensor noise filtered by physics laws (energy conservation).
+It orchestrates these "Physics Containers" across heterogeneous clusters (Browsers, ESP32/IoT, Edge Servers), creating a unified computing mesh where devices synchronize boundary conditions in real-time.
+
+## 🏗️ The 3-Layer Architecture
+
+Dyne abstracts the complexity of distributed physics through three core layers:
+
+1.  **Compiler (The Builder):**
+    * Converts Python (PyTorch/JAX) models or Rust code into optimized WASM binaries.
+    * Injects **"Boundary Sync"** logic automatically, transforming standalone models into communicable actors.
+    * Supports quantization and model distillation for microcontroller targets.
+
+2.  **Runtime (The Orchestrator):**
+    * **Edge & Browser Compatible:** Runs on `dyne-runtime-web` or embedded environments (ESP32/WASM32).
+    * **Physics-Aware Sync:** Manages time-stepping (`dt`) and exchanges boundary data (energy/mass conservation) between split domains.
+    * **Dynamic Partitioning:** (Planned) Re-distributes computational load based on network latency and device capability.
+
+3.  **Visualization (The Observer):**
+    * Aggregates fragmented simulation data from distributed nodes into a global field view.
+    * Provides real-time monitoring of cluster topology and energy error rates.
+
+## 🧪 Research Context
+
+Dyne serves as the foundational platform for the **Micro-SciML** research initiatives:
+* **Theme 1: Physics-Aware Edge Runtime** (Real-time data assimilation on sensors)
+* **Theme 2: Physical Cluster Orchestrator** (K8s alternative for physics-based mesh computing)
+* **Theme 5: Twinkernel** (OS kernel with embedded digital twin capabilities)
+
+> **Current Status (v0.1):** Proof of Concept demonstrating a Wave Equation solver running across dual WASM instances with boundary synchronization.
 
 ## ⚡ Quickstart (v0.1 Demo)
 
