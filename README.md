@@ -11,6 +11,56 @@ MVP splits 1 ONNX into 2 WASM modules running on dual browser canvases. Future: 
 
 Powers Theme1 Physics-Aware Edge Runtime , Theme2 Physical Cluster Orchestrator (WASM on ESP32 clusters), and Theme5 Twinkernel. Demonstrates "safe AI control" – sensor noise filtered by physics laws (energy conservation).
 
+## ⚡ Quickstart (v0.1 Demo)
+
+To run the **Dual-WASM Wave Equation Demo**, you need to build the project using Cargo and serve the files locally.
+
+### Prerequisites
+* **Rust** (latest stable)
+* **Python 3** (for local server)
+
+### Build & Run
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+   cd your-repo-name
+    ```
+2. Build WASM modules: Use wasm-pack to compile the Rust code and generate the JavaScript bindings for the web.
+
+    ```bash
+    wasm-pack build --target web
+    ```
+3. Start Local Server: Launch a simple HTTP server to serve the static files and the generated WASM binary.
+
+    ```bash
+    python3 -m http.server 8000
+    ```
+4. Open Demo: Open your browser and navigate to: http://localhost:8000
+
+
+## 🗺️ Roadmap
+
+We are aiming for a lightweight, distributed runtime for Physics-Informed Machine Learning (SciML) on Edge devices.
+
+- [x] **v0.1.x: Proof of Concept**
+    - [x] Demo: Wave equation continuity across 2 WASM modules.
+- [ ] **v0.2.x: Developer Experience (DX)**
+    - [ ] CLI for scaffolding and building.
+    - [ ] Configuration file support (`.yaml` / `.toml`).
+    - [ ] Stable browser demo environment.
+- [ ] **v0.3.x: Core Technology**
+    - [ ] **PDE-aware Partitioning (Beta):** Automated domain decomposition.
+    - [ ] Simple Edge integration testing.
+- [ ] **v0.4 - v0.6: Edge & Protocol**
+    - [ ] **Edge Runtime:** Support for ESP32 and Linux Embedded.
+    - [ ] **Boundary Sync Protocol 1.0:** Robust data exchange specification.
+    - [ ] **Observability:** Energy error & latency visualization.
+- [ ] **v1.0.0: Stable Release**
+    - [ ] Production-ready API.
+    - [ ] Comprehensive documentation.
+    - [ ] Ready for 3rd-party adoption.
+
 # directory structure 
 ```
 dyne-pinn/
