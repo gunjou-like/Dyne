@@ -1,79 +1,109 @@
-use std::io::Cursor;
-use tract_onnx::prelude::*;
 use wasm_bindgen::prelude::*;
+use serde::Deserialize;
 
 #[wasm_bindgen]
 pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
+// JSONデータ構造定義
+#[derive(Deserialize)]
+struct ModelWeights {
+    conv1_w: Vec<f32>,
+    conv1_b: Vec<f32>,
+    conv2_w: Vec<f32>,
+    conv2_b: Vec<f32>,
+    head_w: Vec<f32>,
+    head_b: Vec<f32>,
+    hidden_dim: usize,
+}
+
+// 1D畳み込み層 (自作実装)
+struct Conv1d {
+    weight: Vec<f32>,
+    bias: Vec<f32>,
+    in_ch: usize,
+    out_ch: usize,
+    k: usize,
+}
+
+impl Conv1d {
+    fn new(w: Vec<f32>, b: Vec<f32>, in_ch: usize, out_ch: usize, k: usize) -> Self {
+        Self { weight: w, bias: b, in_ch, out_ch, k }
+    }
+
+    fn forward(&self, input: &[f32], length: usize, use_tanh: bool) -> Vec<f32> {
+        // 出力バッファ確保
+        let mut output = vec![0.0; self.out_ch * length];
+        let pad = 1; // Padding=1固定
+
+        for out_c in 0..self.out_ch {
+            for i in 0..length {
+                let mut sum = self.bias[out_c];
+                
+                for in_c in 0..self.in_ch {
+                    for k_offset in 0..self.k {
+                        // インデックス計算 (i - pad + k)
+                        let input_idx_signed = (i as isize) - (pad as isize) + (k_offset as isize);
+                        
+                        // 範囲内チェック
+                        if input_idx_signed >= 0 && input_idx_signed < length as isize {
+                            let val = input[in_c * length + (input_idx_signed as usize)];
+                            
+                            // 重みインデックス (flattenされている)
+                            let w_idx = out_c * (self.in_ch * self.k) + in_c * self.k + k_offset;
+                            sum += val * self.weight[w_idx];
+                        }
+                    }
+                }
+                
+                // 活性化関数
+                let idx = out_c * length + i;
+                if use_tanh {
+                    output[idx] = sum.tanh();
+                } else {
+                    output[idx] = sum;
+                }
+            }
+        }
+        output
+    }
+}
+
+// JS公開用クラス
 #[wasm_bindgen]
 pub struct DyneRuntime {
-    model: SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>,
+    layer1: Conv1d,
+    layer2: Conv1d,
+    head: Conv1d,
 }
 
 #[wasm_bindgen]
 impl DyneRuntime {
+    // コンストラクタ: JSON文字列を受け取る
     #[wasm_bindgen(constructor)]
-    pub fn new(model_bytes: &[u8], input_len: usize) -> Result<DyneRuntime, JsValue> {
-        web_sys::console::log_1(&"Loading ONNX model...".into());
-        
-        let mut model = tract_onnx::onnx()
-            .model_for_read(&mut Cursor::new(model_bytes))
-            .map_err(|e| format!("Failed to load ONNX: {}", e))?;
+    pub fn new(json_str: &str) -> Result<DyneRuntime, JsValue> {
+        let w: ModelWeights = serde_json::from_str(json_str)
+            .map_err(|e| e.to_string())?;
 
-        web_sys::console::log_1(&format!("Model loaded. Nodes: {}", model.nodes.len()).into());
+        let h = w.hidden_dim;
+        let k = 3;
 
-        // Conv1D固定サイズ用に3次元入力 [Batch, Channel, Length] = [1, 1, input_len]
-        model.set_input_fact(0, f32::fact([1, 1, input_len]).into())
-             .map_err(|e| format!("Failed to set input shape: {}", e))?;
-
-        web_sys::console::log_1(&"Input shape set".into());
-        
-        // 型情報を伝播させる
-        model.analyse(false)
-             .map_err(|e| format!("Failed to analyse model: {}", e))?;
-        
-        web_sys::console::log_1(&"Model analysed".into());
-
-        // 型推論を実行する前に、モデルを解析
-        model.analyse(false)
-             .map_err(|e| format!("Failed to analyse model: {}", e))?;
-
-        web_sys::console::log_1(&"Model analysed".into());
-
-        // 型推論を試みる
-        let typed_model = model
-            .into_typed()
-            .map_err(|e| format!("Failed type inference: {}", e))?;
-
-        web_sys::console::log_1(&"Type inference successful".into());
-
-        // 実行可能プランに変換（最適化をスキップ）
-        let plan = typed_model
-            .into_runnable()
-            .map_err(|e| format!("Failed to create runnable: {}", e))?;
-
-        web_sys::console::log_1(&"Runnable plan created".into());
-
-        Ok(DyneRuntime { model: plan })
+        Ok(DyneRuntime {
+            layer1: Conv1d::new(w.conv1_w, w.conv1_b, 1, h, k),
+            layer2: Conv1d::new(w.conv2_w, w.conv2_b, h, h, k),
+            head:   Conv1d::new(w.head_w,  w.head_b,  h, 1, k),
+        })
     }
 
-    pub fn run(&self, input_wave: &[f32]) -> Result<Vec<f32>, JsValue> {
+    // 実行: 入力配列(1次元)を受け取り、次のステップを返す
+    pub fn run(&self, input_wave: &[f32]) -> Vec<f32> {
         let len = input_wave.len();
         
-        // Conv1D用に3次元テンソル [1, 1, len] として作成
-        let tensor = tract_ndarray::Array3::from_shape_vec((1, 1, len), input_wave.to_vec())
-            .map_err(|e| format!("Failed to create tensor: {}", e))?;
+        let x1 = self.layer1.forward(input_wave, len, true);
+        let x2 = self.layer2.forward(&x1, len, true);
+        let out = self.head.forward(&x2, len, false);
         
-        let input_tensor = tensor.into_tensor();
-
-        let result = self.model.run(tvec!(input_tensor.into()))
-            .map_err(|e| format!("Inference failed: {}", e))?;
-
-        let output_tensor = result[0].to_array_view::<f32>()
-            .map_err(|e| format!("Failed to get output: {}", e))?;
-        
-        Ok(output_tensor.iter().cloned().collect())
+        out
     }
 }
