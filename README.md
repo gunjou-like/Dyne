@@ -61,7 +61,7 @@ We are aiming for a lightweight, distributed runtime for Physics-Informed Machin
     - [ ] Comprehensive documentation.
     - [ ] Ready for 3rd-party adoption.
 
-## directory structure 
+## Directory structure 
 ```
 dyne-pinn/
 ├── README.md
