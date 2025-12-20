@@ -6,6 +6,7 @@ const OVERLAP = 2;
 let runtime1, runtime2;
 let state1, state2;
 let ctx1, ctx2;
+let simulationInterval = null; // シミュレーションループのID
 
 async function main() {
     try {
@@ -39,8 +40,7 @@ async function main() {
         
         draw();
         
-        // 動作確認のため、自動スタートさせない場合はここをコメントアウト
-        window.startSimulation(); 
+        console.log("✅ Ready! Click 'Start Simulation' button to begin.");
 
     } catch (e) {
         console.error("❌ ERROR:", e);
@@ -48,9 +48,20 @@ async function main() {
     }
 }
 
-window.startSimulation = async function() {
+window.startSimulation = function() {
+    if (simulationInterval) {
+        console.log("⚠️ Simulation already running");
+        return;
+    }
+    
+    if (!runtime1 || !runtime2) {
+        console.error("❌ Runtimes not initialized yet");
+        alert("Please wait for initialization to complete");
+        return;
+    }
+    
     console.log("🚀 Simulation Started");
-    setInterval(() => {
+    simulationInterval = setInterval(() => {
         // Run (入力配列の長さに基づいて計算してくれるので、Ghost Cell含めて渡してOK)
         const next1 = runtime1.run(state1);
         const next2 = runtime2.run(state2);
@@ -67,6 +78,14 @@ window.startSimulation = async function() {
 
         draw();
     }, 50);
+};
+
+window.stopSimulation = function() {
+    if (simulationInterval) {
+        clearInterval(simulationInterval);
+        simulationInterval = null;
+        console.log("⏸️ Simulation Stopped");
+    }
 };
 
 function draw() {
