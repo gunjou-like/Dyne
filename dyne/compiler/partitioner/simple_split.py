@@ -33,6 +33,9 @@ class SimpleSplitter(Partitioner):
             self._update_tensor_dim(part_model.graph.input, dim_index=2, new_size=part_width)
             self._update_tensor_dim(part_model.graph.output, dim_index=2, new_size=part_width)
 
+            self._update_tensor_dim(part_model.graph.input, dim_index=0, new_size=1)
+            self._update_tensor_dim(part_model.graph.output, dim_index=0, new_size=1)
+            
             part_model.graph.name = f"{model.graph.name}_part_{i}"
             sub_models.append(part_model)
 

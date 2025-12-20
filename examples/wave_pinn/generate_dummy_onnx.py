@@ -33,13 +33,14 @@ def export_onnx():
 
     # 3. ダミー入力の作成
     # Batch=1, Channel=1, Length=100 (0.0~1.0の空間を100分割した想定)
+    # 固定サイズでエクスポートするため、実際の使用サイズに合わせる
     dummy_input = torch.randn(1, 1, 100)
 
     # 4. 出力パスの設定
     output_dir = os.path.dirname(os.path.abspath(__file__))
     output_path = os.path.join(output_dir, "wave_pinn.onnx")
 
-    # 5. ONNXエクスポート (ここが重要)
+    # 5. ONNXエクスポート (Dynamic Axesなし - 完全固定サイズ)
     print(f"Exporting model to {output_path}...")
     torch.onnx.export(
         model,
@@ -50,14 +51,12 @@ def export_onnx():
         do_constant_folding=True,  # 定数畳み込み最適化
         input_names=['input'],     # 入力ノード名
         output_names=['output'],   # 出力ノード名
-        dynamic_axes={
-            'input': {0: 'batch_size', 2: 'spatial_dim'},  # 空間次元(2)を可変長にする
-            'output': {0: 'batch_size', 2: 'spatial_dim'}
-        }
+        # dynamic_axes を削除 - 完全に固定サイズでエクスポート
     )
     print("✅ Export completed!")
-    print(f"   Input shape: {dummy_input.shape}")
-    print("   Dynamic axes enabled on spatial dimension (index 2).")
+    print(f"   Input shape: {dummy_input.shape} (Fixed size)")
+    print("   Output shape: [1, 1, 100] (Fixed size)")
+    print("   No dynamic axes - tract compatible!")
 
 if __name__ == "__main__":
     export_onnx()
