@@ -23,8 +23,8 @@ To run the **Dual-WASM Wave Equation Demo**, you need to build the project using
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-   cd your-repo-name
+   git clone https://github.com/gunjou-like/Dyne.git
+   cd Dyne
     ```
 2. Build WASM modules: Use wasm-pack to compile the Rust code and generate the JavaScript bindings for the web.
 
