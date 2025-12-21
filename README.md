@@ -1,6 +1,3 @@
-# Dyne
-**Lightweight PINN Inference Toolchain for IoT/Edge/WASM**
-
 # Dyne: Universal Physics Container & Distributed Runtime
 
 **Deploy any Physics, Anywhere.**
