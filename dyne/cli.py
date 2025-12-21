@@ -1,45 +1,105 @@
 import click
-import onnx
+import toml
 import os
-from dyne.compiler.partitioner.simple_split import SimpleSplitter
+import subprocess
+import sys
+import shutil
+from pathlib import Path
+
+VERSION = "0.2.0-alpha"
+
+# モデル名とRustクレートの対応表 (当面はハードコード)
+SOLVER_MAP = {
+    "wave_equation_2d": "raw-pinn-engine", 
+    # 将来: "heat_equation": "dyne-solver-heat", etc.
+}
 
 @click.group()
+@click.version_option(version=VERSION)
 def main():
-    """Dyne: Physics-Aware Edge Runtime Compiler"""
+    """Dyne: Universal Physics Container Toolchain"""
     pass
 
 @main.command()
-@click.argument('input_model', type=click.Path(exists=True))
-@click.option('--parts', default=2, help='Number of partitions')
-@click.option('--overlap', default=2, help='Overlap size (Ghost cells)')
-@click.option('--output-dir', default='.', help='Output directory')
-def build(input_model, parts, overlap, output_dir):
-    """
-    Split ONNX model into partitions.
-    Example: python -m dyne.cli build wave_pinn.onnx --parts 2
-    """
-    print(f"🚀 Building Dyne modules from {input_model}...")
-    print(f"   Partitions: {parts}, Overlap: {overlap}")
-
-    # 1. モデルロード
-    model = onnx.load(input_model)
-    onnx.checker.check_model(model)
-
-    # 2. 分割実行
-    splitter = SimpleSplitter(num_parts=parts, overlap=overlap)
-    sub_models = splitter.split(model)
-
-    # 3. 保存
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    for i, sub_model in enumerate(sub_models):
-        filename = f"part_{i}.onnx"
-        out_path = os.path.join(output_dir, filename)
-        onnx.save(sub_model, out_path)
-        print(f"   💾 Saved: {out_path}")
+@click.option('--config', '-c', default='dyne.toml', help='Path to config file')
+def run(config):
+    """Build and Run the simulation defined in dyne.toml"""
     
-    print("✨ Build completed successfully!")
+    # --- 1. 設定読み込み ---
+    config_path = Path(config).resolve()
+    project_root = config_path.parent
+    
+    if not config_path.exists():
+        click.secho(f"Error: Configuration file '{config_path}' not found.", fg="red")
+        sys.exit(1)
 
-if __name__ == '__main__':
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            conf = toml.load(f)
+    except Exception as e:
+        click.secho(f"Error parsing TOML: {e}", fg="red")
+        sys.exit(1)
+
+    project_name = conf.get("project", {}).get("name", "Unknown")
+    model_name = conf.get("simulation", {}).get("model", "")
+
+    click.secho(f"\n🚀 Starting Dyne Runtime v{VERSION}", fg="green", bold=True)
+    click.echo(f"   📂 Project: {project_name}")
+    click.echo(f"   🧮 Model:   {model_name}")
+
+    # --- 2. Rustソルバの特定 ---
+    solver_crate = SOLVER_MAP.get(model_name)
+    if not solver_crate:
+        click.secho(f"Error: Model '{model_name}' is not supported yet.", fg="red")
+        click.echo(f"Available models: {', '.join(SOLVER_MAP.keys())}")
+        sys.exit(1)
+
+    # Dyneルートディレクトリの特定 (cli.pyの2つ上と仮定)
+    # cli.py -> dyne/ -> Dyne/ (Root)
+    dyne_root = Path(__file__).parent.parent
+    solver_path = dyne_root / "rust" / "solvers" / solver_crate
+
+    if not solver_path.exists():
+        click.secho(f"Error: Solver crate not found at {solver_path}", fg="red")
+        sys.exit(1)
+
+    # --- 3. ビルド実行 (wasm-pack) ---
+    click.secho(f"\n🔨 Building solver: {solver_crate} ...", fg="yellow")
+    
+    # 出力先: 実行ディレクトリ配下の ./pkg
+    output_dir = project_root / "pkg"
+    
+    # ビルドコマンド
+    # wasm-pack build <solver_path> --target web --out-dir <output_dir>
+    cmd = [
+        "wasm-pack", "build", str(solver_path),
+        "--target", "web",
+        "--out-dir", str(output_dir),
+        "--no-typescript" # 今回はJSのみで簡略化
+    ]
+
+    try:
+        subprocess.run(cmd, check=True)
+        click.secho("✅ Build successful!", fg="green")
+    except subprocess.CalledProcessError:
+        click.secho("❌ Build failed.", fg="red")
+        sys.exit(1)
+    except FileNotFoundError:
+        click.secho("❌ Error: 'wasm-pack' command not found. Please install it.", fg="red")
+        sys.exit(1)
+
+    # --- 4. サーバー起動 ---
+    server_port = 8000
+    click.secho(f"\n🌍 Serving at http://localhost:{server_port}", fg="cyan")
+    click.echo("   (Press CTRL+C to stop)")
+    
+    try:
+        subprocess.run(
+            [sys.executable, "-m", "http.server", str(server_port)],
+            cwd=project_root
+        )
+    except KeyboardInterrupt:
+        click.echo("\n🛑 Server stopped.")
+
+if __name__ == "__main__":
     main()

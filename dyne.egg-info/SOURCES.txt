@@ -14,3 +14,4 @@ dyne/compiler/parser.py
 dyne/compiler/partitioner/__init__.py
 dyne/compiler/partitioner/base.py
 dyne/compiler/partitioner/simple_split.py
+tests/test_onnx_model.py

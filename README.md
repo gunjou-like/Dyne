@@ -88,7 +88,7 @@ We are aiming for a lightweight, distributed runtime for Physics-Informed Machin
 
 ## Directory structure 
 ```
-dyne-pinn/
+Dyne/
 ├── README.md
 ├── LICENSE
 ├── pyproject.toml

@@ -1,0 +1,25 @@
+[package]
+name = "raw-pinn-engine"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+# "rlib" はワークスペース内でのテストや連携用に追加しておくと便利です
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
+
+# JSONの読み込み・シリアライズ用
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# getrandom (WASM環境での乱数生成に必須)
+getrandom = { version = "0.2", features = ["js"] }
+
+# もし v0.1 の lib.rs で web_sys (console.logなど) を使っていた場合は
+# 以下が必要になる可能性がありますが、一旦元の構成通りにします。
+# [dependencies.web-sys]
+# version = "0.3"
+# features = ["console"]

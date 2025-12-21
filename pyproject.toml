@@ -1,16 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "dyne"
-version = "0.1.0"
+version = "0.2.0"
+description = "Universal Physics Container Toolchain"
 dependencies = [
     "onnx>=1.14.0",
     "numpy",
-    "click",  # CLI作成用ライブラリ
-    # CPU-only PyTorch: 単純に "torch" を追加します。
-    # 注意: pip で CPU ビルドのホイールを使う場合は次のコマンドを使ってください:
-    # pip install torch --index-url https://download.pytorch.org/whl/cpu
+    "click",
     "torch",
-    # ONNX スクリプト化用
     "onnxscript",
+    "toml",  # 追加: dyne.toml の読み込みに必要
 ]
+requires-python = ">=3.8"
+
 [project.scripts]
 dyne = "dyne.cli:main"
+
+
+[tool.setuptools.packages.find]
+include = ["dyne*"]  # "dyne" で始まるパッケージのみを含める
+exclude = ["wasm*", "rust*", "examples*", "tests*"] # それ以外は除外

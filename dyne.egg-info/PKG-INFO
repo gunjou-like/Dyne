@@ -1,8 +1,11 @@
 Metadata-Version: 2.4
 Name: dyne
-Version: 0.1.0
+Version: 0.2.0
+Summary: Universal Physics Container Toolchain
+Requires-Python: >=3.8
 Requires-Dist: onnx>=1.14.0
 Requires-Dist: numpy
 Requires-Dist: click
 Requires-Dist: torch
 Requires-Dist: onnxscript
+Requires-Dist: toml

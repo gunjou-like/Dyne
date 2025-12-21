@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "dyne-core",
+    "solvers/wave-equation", # さっき作ったやつ
+    "solvers/raw-pinn-engine", # 今回移植するやつ
+]
+resolver = "2"

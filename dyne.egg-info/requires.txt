@@ -3,3 +3,4 @@ numpy
 click
 torch
 onnxscript
+toml
