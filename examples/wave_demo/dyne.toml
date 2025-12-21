@@ -1,0 +1,26 @@
+[project]
+name = "wave_simulation_v1"
+version = "0.1.0"
+description = "2D Wave Equation on Distributed WASM"
+
+[simulation]
+# 使用する物理モデル（今のところは組み込みのものを指定）
+model = "wave_equation_2d" 
+# 時間刻み幅と空間刻み幅
+dt = 0.05
+dx = 1.0
+# シミュレーション空間のサイズ
+width = 512
+height = 512
+
+[simulation.initial_conditions]
+# 初期状態（例: 中心にパルス）
+type = "gaussian_pulse"
+center = [256, 256]
+amplitude = 10.0
+
+[compute]
+# 分割数（v0.1では2分割でした）
+partitions = 2
+# 通信境界の同期頻度（ステップごと）
+sync_interval = 1

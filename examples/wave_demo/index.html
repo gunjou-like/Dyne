@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dyne MVP: Split Execution</title>
+    <style>
+        body { background: #222; color: #fff; font-family: sans-serif; text-align: center; }
+        canvas { border: 1px solid #555; margin: 0; display: inline-block; vertical-align: middle;}
+        #container { display: flex; justify-content: center; gap: 0; }
+        /* 境界線を目立たなくして「繋がってる感」を出す */
+        #canvas1 { border-right: 1px dashed #f00; } 
+        #canvas2 { border-left: none; }
+    </style>
+</head>
+<body>
+    <h1>Dyne: Distributed Physics Runtime</h1>
+    <div id="container">
+        <canvas id="canvas1" width="400" height="200"></canvas>
+        <canvas id="canvas2" width="400" height="200"></canvas>
+    </div>
+    <button onclick="startSimulation()">Start Simulation</button>
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
