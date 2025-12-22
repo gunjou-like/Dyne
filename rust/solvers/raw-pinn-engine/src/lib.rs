@@ -1,6 +1,11 @@
 use wasm_bindgen::prelude::*;
 use serde::Deserialize;
-mod constants; // 自動生成されるファイルを読み込む
+
+// ▼▼▼ 追加: 共通Traitを使う ▼▼▼
+use dyne_core::DyneEngine;
+
+mod constants;
+use constants::*;
 #[wasm_bindgen]
 pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
@@ -78,6 +83,35 @@ pub struct DyneRuntime {
     head: Conv1d,
 }
 
+// ▼▼▼ 追加: 共通インターフェースの実装 (Rust内部用) ▼▼▼
+// ここに「純粋な物理計算ロジック」を閉じ込めます
+impl DyneEngine for DyneRuntime {
+    fn step(&mut self, input_wave: &[f32]) -> Vec<f32> {
+        let len = input_wave.len();
+
+        // バリデーション (Phase Aで実装したもの)
+        if len != WIDTH {
+            web_sys::console::error_1(&format!(
+                "Dyne Error: Input width ({}) matches dyne.toml config ({})",
+                len, WIDTH
+            ).into());
+            panic!("Dimension mismatch! Configured: {}, Got: {}", WIDTH, len);
+        }
+        
+        // 計算ロジック
+        let x1 = self.layer1.forward(input_wave, len, true);
+        let x2 = self.layer2.forward(&x1, len, true);
+        let out = self.head.forward(&x2, len, false);
+        
+        out
+    }
+
+    fn get_config(&self) -> String {
+        format!("Width: {}, dt: {}", WIDTH, DT)
+    }
+}
+
+// ▼▼▼ 修正: WASM公開用インターフェース (JSとの接続用) ▼▼▼
 #[wasm_bindgen]
 impl DyneRuntime {
     // コンストラクタ: JSON文字列を受け取る
@@ -96,25 +130,9 @@ impl DyneRuntime {
         })
     }
 
-    // 実行: 入力配列(1次元)を受け取り、次のステップを返す
-    pub fn run(&self, input_wave: &[f32]) -> Vec<f32> {
-        let len = input_wave.len();
-
-        // ▼▼▼ 追加: 設定ファイルと実際のデータの整合性チェック ▼▼▼
-        if len != constants::WIDTH {
-            // ブラウザのコンソールにエラーを出してパニックさせる
-            web_sys::console::error_1(&format!(
-                "Dyne Error: Input width ({}) matches dyne.toml config ({})",
-                len, constants::WIDTH
-            ).into());
-            panic!("Dimension mismatch! Configured: {}, Got: {}", constants::WIDTH, len);
-        }
-        // ▲▲▲ 追加終わり ▲▲▲
-        
-        let x1 = self.layer1.forward(input_wave, len, true);
-        let x2 = self.layer2.forward(&x1, len, true);
-        let out = self.head.forward(&x2, len, false);
-        
-        out
+    // JSから呼ばれる関数
+    // 中身は Trait の step を呼ぶだけにする！
+    pub fn run(&mut self, input_wave: &[f32]) -> Vec<f32> {
+        self.step(input_wave)
     }
 }
