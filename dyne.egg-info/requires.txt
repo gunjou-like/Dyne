@@ -1,6 +1,0 @@
-onnx>=1.14.0
-numpy
-click
-torch
-onnxscript
-toml
