@@ -32,6 +32,43 @@ Dyne serves as the foundational platform for the **Micro-SciML** research initia
 * **Theme 5: Twinkernel** (OS kernel with embedded digital twin capabilities)
 
 > **Current Status (v0.1):** Proof of Concept demonstrating a Wave Equation solver running across dual WASM instances with boundary synchronization.
+⚡ Quickstart (v0.2)
+In v0.2, we introduced the dyne CLI to automate the build and run process.
+
+Prerequisites
+- Rust (latest stable)
+
+- Python 3.12.4
+
+- wasm-pack (Required for building WASM: cargo install wasm-pack)
+
+Installation (Dev Mode)
+Clone the repository:
+
+```Bash
+git clone https://github.com/gunjou-like/Dyne.git
+cd Dyne
+Install the Dyne CLI:
+```
+```Bash
+pip install -e .
+Run the Demo
+Navigate to the example project and use the CLI to build and serve the simulation.
+```
+```Bash
+
+cd examples/wave_demo
+dyne run
+```
+This command will automatically:
+
+1. Read dyne.toml.
+
+2. Generate optimized Rust code (constants.rs) based on your config.
+
+3. Compile the WASM module using wasm-pack.
+
+4. Start a local server at http://localhost:8000.
 
 ## ⚡ Quickstart (v0.1 Demo)
 
@@ -67,13 +104,13 @@ We are aiming for a lightweight, distributed runtime for Physics-Informed Machin
 
 - [x] **v0.1.x: Proof of Concept**
     - [x] Demo: Wave equation continuity across 2 WASM modules.
-- [ ] **v0.2.x: Developer Experience (DX)**
-    - [ ] CLI for scaffolding and building.
-    - [ ] Configuration file support (`.yaml` / `.toml`).
-    - [ ] Stable browser demo environment.
+- [x] **v0.2.x: Developer Experience (DX) & Foundation**
+    - [x] **CLI Toolchain:** `dyne run` for automated building and serving.
+    - [x] **Configuration:** `dyne.toml` support with Parameter Injection.
+    - [x] **Core Refactoring:** `DyneEngine` trait for universal solver interface.
 - [ ] **v0.3.x: Core Technology**
+    - [ ] **Multi-Model Support:** Adding Heat Equation / Fluid solvers.
     - [ ] **PDE-aware Partitioning (Beta):** Automated domain decomposition.
-    - [ ] Simple Edge integration testing.
 - [ ] **v0.4 - v0.6: Edge & Protocol**
     - [ ] **Edge Runtime:** Support for ESP32 and Linux Embedded.
     - [ ] **Boundary Sync Protocol 1.0:** Robust data exchange specification.
