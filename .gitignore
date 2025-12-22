@@ -8,6 +8,7 @@ __pycache__/
 *.so
 *.egg
 *.egg-info/
+*.egg-info
 build/
 *.whl
 
