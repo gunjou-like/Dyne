@@ -10,7 +10,7 @@ model = "wave_equation_2d"
 dt = 0.05
 dx = 1.0
 # シミュレーション空間のサイズ
-width = 512
+width = 52
 height = 512
 
 [simulation.initial_conditions]
