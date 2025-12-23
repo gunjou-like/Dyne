@@ -33,6 +33,37 @@ Dyne serves as the foundational platform for the **Micro-SciML** research initia
 
 > **Current Status (v0.1):** Proof of Concept demonstrating a Wave Equation solver running across dual WASM instances with boundary synchronization.
 
+## ⚡ Quickstart (v0.2)
+In v0.2, we introduced the dyne CLI to automate the build and run process.
+
+Prerequisites
+- Rust (latest stable)
+
+- Python 3.12.4
+
+- wasm-pack (Required for building WASM: cargo install wasm-pack)
+
+Installation (Dev Mode)
+Clone the repository:
+
+```Bash
+git clone https://github.com/gunjou-like/Dyne.git
+cd Dyne
+```
+Install the Dyne CLI:
+
+```Bash
+pip install -e .
+Run the Demo
+Navigate to the example project and use the CLI to build and serve the simulation.
+```
+```Bash
+
+cd examples/heat_demo
+dyne run
+```
+
+
 
 ## ⚡ Quickstart (v0.2)
 In v0.2, we introduced the dyne CLI to automate the build and run process.
@@ -50,8 +81,9 @@ Clone the repository:
 ```Bash
 git clone https://github.com/gunjou-like/Dyne.git
 cd Dyne
-Install the Dyne CLI:
 ```
+Install the Dyne CLI:
+
 ```Bash
 pip install -e .
 Run the Demo
