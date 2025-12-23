@@ -31,9 +31,9 @@ Dyne serves as the foundational platform for the **Micro-SciML** research initia
 * **Theme 2: Physical Cluster Orchestrator** (K8s alternative for physics-based mesh computing)
 * **Theme 5: Twinkernel** (OS kernel with embedded digital twin capabilities)
 
-> **Current Status (v0.1):** Proof of Concept demonstrating a Wave Equation solver running across dual WASM instances with boundary synchronization.
 
-## ⚡ Quickstart (v0.2)
+
+## ⚡ Quickstart (v0.3)
 In v0.2, we introduced the dyne CLI to automate the build and run process.
 
 Prerequisites
