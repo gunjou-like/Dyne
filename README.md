@@ -59,6 +59,12 @@ pip install -e .
 Run the Demo
 Navigate to the example project and use the CLI to build and serve the simulation.
 
+#### wave_demo
+```Bash
+cd examples/wave_demo
+dyne run
+```
+
 #### heat_demo
 ```Bash
 cd examples/heat_demo
@@ -99,7 +105,6 @@ Run the Demo
 Navigate to the example project and use the CLI to build and serve the simulation.
 
 ```Bash
-
 cd examples/wave_demo
 dyne run
 ```
