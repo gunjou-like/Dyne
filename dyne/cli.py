@@ -11,6 +11,7 @@ VERSION = "0.2.0-alpha"
 # モデル名とRustクレートの対応表 (当面はハードコード)
 SOLVER_MAP = {
     "wave_equation_2d": "raw-pinn-engine", 
+    "heat_equation": "heat-equation"
     # 将来: "heat_equation": "dyne-solver-heat", etc.
 }
 

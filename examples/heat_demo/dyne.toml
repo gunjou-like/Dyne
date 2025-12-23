@@ -1,0 +1,9 @@
+[project]
+name = "heat_demo"
+version = "0.1.0"
+
+[simulation]
+model = "heat_equation" # <--- ここで切り替え！
+width = 52
+height = 1
+dt = 0.4 # 拡散速度調整
