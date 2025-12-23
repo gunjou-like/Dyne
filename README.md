@@ -33,8 +33,9 @@ Dyne serves as the foundational platform for the **Micro-SciML** research initia
 
 
 
-## ⚡ Quickstart (v0.3)
-In v0.2, we introduced the dyne CLI to automate the build and run process.
+## ⚡ Quickstart 
+
+### v0.3.1
 
 Prerequisites
 - Rust (latest stable)
@@ -54,18 +55,25 @@ Install the Dyne CLI:
 
 ```Bash
 pip install -e .
+```
 Run the Demo
 Navigate to the example project and use the CLI to build and serve the simulation.
-```
-```Bash
 
+#### heat_demo
+```Bash
 cd examples/heat_demo
+dyne run
+```
+
+#### lorenz_demo
+```Bash
+cd examples/lorenz_demo
 dyne run
 ```
 
 
 
-## ⚡ Quickstart (v0.2)
+### v0.2 Demo
 In v0.2, we introduced the dyne CLI to automate the build and run process.
 
 Prerequisites
@@ -86,9 +94,10 @@ Install the Dyne CLI:
 
 ```Bash
 pip install -e .
+```
 Run the Demo
 Navigate to the example project and use the CLI to build and serve the simulation.
-```
+
 ```Bash
 
 cd examples/wave_demo
@@ -104,7 +113,7 @@ This command will automatically:
 
 4. Start a local server at http://localhost:8000.
 
-## ⚡ Quickstart (v0.1 Demo)
+### v0.1 Demo
 
 To run the **Dual-WASM Wave Equation Demo**, you need to build the project using Cargo and serve the files locally.
 
