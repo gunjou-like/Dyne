@@ -1,0 +1,11 @@
+[project]
+name = "lorenz_demo"
+version = "0.1.0"
+
+[simulation]
+model = "lorenz_ode"  # CLIで指定したキー
+# ODEでは空間幅(width)は使いませんが、
+# 現在のCLIの仕様上、記述がないとエラーになる場合は適当な値を入れておきます
+width = 1 
+height = 1
+dt = 0.01

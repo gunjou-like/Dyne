@@ -3,7 +3,8 @@ members = [
     "dyne-core",
     "solvers/wave-equation", # さっき作ったやつ
     "solvers/raw-pinn-engine", "solvers/heat-equation", # 今回移植するやつ
-    "solvers/heat-equation", # <--- 追加
+    "solvers/heat-equation", "solvers/lorenz-ode", # <--- 追加
+    "solvers/lorenz-ode",
 ]
 resolver = "2"
 

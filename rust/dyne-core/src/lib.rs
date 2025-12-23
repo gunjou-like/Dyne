@@ -1,21 +1,24 @@
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ModelCategory {
+    PDE, // 偏微分方程式 (空間がある: Wave, Heat)
+    ODE, // 常微分方程式 (空間がない: Lorenz, Neural ODE)
+}
+
 /// Dyneシステム上で動作する物理エンジンの共通インターフェース
 pub trait DyneEngine {
     /// 1ステップ時間を進める
-    /// 
-    /// # Arguments
-    /// * `input` - 現在の境界条件や入力データ
-    /// 
-    /// # Returns
-    /// * 次のタイムステップの状態データ
     fn step(&mut self, input: &[f32]) -> Vec<f32>;
 
-    /// 設定されている物理パラメータ（グリッド幅など）を取得する
-    /// (デバッグや可視化用)
-    fn get_config(&self) -> String;
-}
+    /// このモデルが PDE か ODE かを返す
+    fn category(&self) -> ModelCategory;
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+    /// 境界同期用のデータを取得する
+    /// PDEの場合: 領域の端のデータを返す
+    /// ODEの場合: 結合用の状態変数を返す (あるいは空)
+    fn get_boundary(&self) -> Vec<f32>;
+
+    /// 設定情報の取得
+    fn get_config(&self) -> String;
 }
 
 #[cfg(test)]

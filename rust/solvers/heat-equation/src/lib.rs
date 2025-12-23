@@ -52,6 +52,17 @@ impl DyneEngine for HeatSolver {
         next_grid
     }
 
+    // ▼▼▼ 追加 ▼▼▼
+    fn category(&self) -> dyne_core::ModelCategory {
+        dyne_core::ModelCategory::PDE
+    }
+
+    fn get_boundary(&self) -> Vec<f32> {
+        // 今は簡易的に空でも良いが、本来は両端の値を返す
+        vec![] 
+    }
+    // ▲▲▲ 追加ここまで ▲▲▲
+
     fn get_config(&self) -> String {
         format!("Heat Solver (FDM), alpha={}, width={}", self.alpha, WIDTH)
     }

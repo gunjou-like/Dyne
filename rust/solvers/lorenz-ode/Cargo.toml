@@ -1,0 +1,19 @@
+[package]
+name = "dyne-solver-lorenz"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
+
+# 共通インターフェース
+dyne-core = { path = "../../dyne-core" }
+
+# web-sys (エラーログ用)
+[dependencies.web-sys]
+version = "0.3"
+features = ["console"]

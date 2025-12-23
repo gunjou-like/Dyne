@@ -105,7 +105,16 @@ impl DyneEngine for DyneRuntime {
         
         out
     }
+    // ▼▼▼ 追加 ▼▼▼
+    fn category(&self) -> dyne_core::ModelCategory {
+        dyne_core::ModelCategory::PDE
+    }
 
+    fn get_boundary(&self) -> Vec<f32> {
+        // 今は簡易的に空でも良いが、本来は両端の値を返す
+        vec![] 
+    }
+    // ▲▲▲ 追加ここまで ▲▲▲
     fn get_config(&self) -> String {
         format!("Width: {}, dt: {}", WIDTH, DT)
     }
