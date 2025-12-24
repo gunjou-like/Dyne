@@ -35,6 +35,54 @@ Dyne serves as the foundational platform for the **Micro-SciML** research initia
 
 ## ⚡ Quickstart 
 
+### v0.3.2
+Prerequisites
+- Rust (latest stable)
+
+- Python 3.12.4
+
+- wasm-pack (Required for building WASM: cargo install wasm-pack)
+
+Installation (Dev Mode)
+Clone the repository:
+
+```Bash
+git clone https://github.com/gunjou-like/Dyne.git
+cd Dyne
+```
+Install the Dyne CLI:
+
+```Bash
+pip install -e .
+```
+Run the Demo
+Navigate to the example project and use the CLI to build and serve the simulation.
+#### onnx_demo
+```Bash
+cd examples/onnx_demo
+dyne run
+```
+
+
+#### wave_demo
+```Bash
+cd examples/wave_demo
+dyne run
+```
+
+#### heat_demo
+```Bash
+cd examples/heat_demo
+dyne run
+```
+
+#### lorenz_demo
+```Bash
+cd examples/lorenz_demo
+dyne run
+```
+
+
 ### v0.3.1
 
 Prerequisites
