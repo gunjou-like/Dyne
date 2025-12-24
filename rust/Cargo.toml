@@ -5,6 +5,7 @@ members = [
     "solvers/raw-pinn-engine", "solvers/heat-equation", # 今回移植するやつ
     "solvers/heat-equation", "solvers/lorenz-ode", # <--- 追加
     "solvers/lorenz-ode",
+    "solvers/generated-mlp",
 ]
 resolver = "2"
 

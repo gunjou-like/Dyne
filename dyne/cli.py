@@ -6,13 +6,14 @@ import sys
 import shutil
 from pathlib import Path
 
-VERSION = "0.2.0-alpha"
+VERSION = "0.3.2-alpha"
 
 # モデル名とRustクレートの対応表 (当面はハードコード)
 SOLVER_MAP = {
     "wave_equation_2d": "raw-pinn-engine", 
     "heat_equation": "heat-equation",
-    "lorenz_ode": "lorenz-ode"
+    "lorenz_ode": "lorenz-ode",
+    "generated_mlp": "generated-mlp"
     # 将来: "heat_equation": "dyne-solver-heat", etc.
 }
 

@@ -1,0 +1,9 @@
+[project]
+name = "onnx_demo"
+version = "0.1.0"
+
+[simulation]
+model = "generated_mlp"  # cli.py に登録したキー
+width = 1  # MLPなので空間サイズはあまり関係ないが形式上指定
+height = 1
+dt = 0.1

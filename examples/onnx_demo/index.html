@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dyne v0.3.2: ONNX Transpiler Demo</title>
+    <style>
+        body { background-color: #111; color: #eee; font-family: monospace; text-align: center; }
+        canvas { border: 1px solid #333; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Dyne Compiler: ONNX to Rust/WASM</h1>
+    <p>Model: y = 2x (Transpiled from PyTorch)</p>
+    <p>Input: [1.0, 2.0, 3.0, 4.0, 5.0]</p>
+    <div id="output">Calculating...</div>
+    
+    <canvas id="chart" width="600" height="400"></canvas>
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
