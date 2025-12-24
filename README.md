@@ -6,6 +6,62 @@ Dyne is a lightweight toolchain that turns physics models—whether **Physics-In
 
 It orchestrates these "Physics Containers" across heterogeneous clusters (Browsers, ESP32/IoT, Edge Servers), creating a unified computing mesh where devices synchronize boundary conditions in real-time.
 
+
+## ⚡ Quickstart 
+
+### v0.3.2
+Prerequisites
+- Rust (latest stable)
+
+- Python 3.12.4
+
+- wasm-pack (Required for building WASM: cargo install wasm-pack)
+
+Installation (Dev Mode)
+Clone the repository:
+
+```Bash
+git clone https://github.com/gunjou-like/Dyne.git
+cd Dyne
+```
+Install the Dyne CLI:
+
+```Bash
+pip install -e .
+```
+Run the Demo
+Navigate to the example project and use the CLI to build and serve the simulation.
+
+
+#### wave_demo
+![wave_demo](./assets/wave_demo.gif)
+```Bash
+cd examples/wave_demo
+dyne run
+```
+
+#### heat_demo
+![heat_demo](./assets/heat_demo.gif)
+```Bash
+cd examples/heat_demo
+dyne run
+```
+
+#### lorenz_demo
+![lorenz_demo](./assets/lorenz_demo.gif)
+```Bash
+cd examples/lorenz_demo
+dyne run
+```
+
+#### onnx_demo
+![onnx_demo](./assets/onnx_demo.png)
+```Bash
+cd examples/onnx_demo
+dyne run
+```
+
+
 ## 🏗️ The 3-Layer Architecture
 
 Dyne abstracts the complexity of distributed physics through three core layers:
@@ -33,56 +89,7 @@ Dyne serves as the foundational platform for the **Micro-SciML** research initia
 
 
 
-## ⚡ Quickstart 
-
-### v0.3.2
-Prerequisites
-- Rust (latest stable)
-
-- Python 3.12.4
-
-- wasm-pack (Required for building WASM: cargo install wasm-pack)
-
-Installation (Dev Mode)
-Clone the repository:
-
-```Bash
-git clone https://github.com/gunjou-like/Dyne.git
-cd Dyne
-```
-Install the Dyne CLI:
-
-```Bash
-pip install -e .
-```
-Run the Demo
-Navigate to the example project and use the CLI to build and serve the simulation.
-#### onnx_demo
-```Bash
-cd examples/onnx_demo
-dyne run
-```
-
-
-#### wave_demo
-```Bash
-cd examples/wave_demo
-dyne run
-```
-
-#### heat_demo
-```Bash
-cd examples/heat_demo
-dyne run
-```
-
-#### lorenz_demo
-```Bash
-cd examples/lorenz_demo
-dyne run
-```
-
-
+## Demo in Previous versions
 ### v0.3.1
 
 Prerequisites
