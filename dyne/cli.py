@@ -15,7 +15,8 @@ SOLVER_MAP = {
     "lorenz_ode": "lorenz-ode",
     "generated_mlp": "generated-mlp",
     "cnn_model": "generated-cnn",
-    "cnn_v04": "cnn-v04"
+    "cnn_v04": "cnn-v04",
+    "fno_model": "fno-v0"
 }
 
 @click.group()

@@ -8,6 +8,7 @@ members = [
     "solvers/generated-mlp",
     "solvers/generated-cnn",
     "solvers/cnn-v04",
+    "solvers/fno-v0",
 ]
 resolver = "2"
 
