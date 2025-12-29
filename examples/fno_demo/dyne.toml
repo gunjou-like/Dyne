@@ -1,0 +1,9 @@
+[project]
+name = "fno_demo"
+version = "0.1.0"
+
+[simulation]
+model = "fno_model"
+width = 32  # Rust側のLength定数に合わせる
+height = 1
+dt = 0.1

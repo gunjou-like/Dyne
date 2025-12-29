@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dyne v0.4.1: FNO / FFT Demo</title>
+    <style>
+        body { background-color: #111; color: #eee; font-family: sans-serif; text-align: center; }
+        canvas { border: 1px solid #555; width: 600px; height: 200px; margin: 10px; background: #222; }
+        .container { display: flex; flex-direction: column; align-items: center; }
+    </style>
+</head>
+<body>
+    <h1>Dyne v0.4.1: Neural Operator (FFT)</h1>
+    <p>Input: Square Wave (High Freq) -> FNO (Low Pass) -> Output: Smoothed Wave</p>
+    
+    <div class="container">
+        <h3>Input vs Output</h3>
+        <canvas id="chart" width="600" height="200"></canvas>
+    </div>
+    <div id="status">Loading...</div>
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>
