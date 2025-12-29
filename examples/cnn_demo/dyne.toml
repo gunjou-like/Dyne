@@ -1,0 +1,9 @@
+[project]
+name = "cnn_demo"
+version = "0.1.0"
+
+[simulation]
+model = "cnn_model"
+width = 5   # 今回は5x5固定
+height = 5
+dt = 0.1
