@@ -1,0 +1,9 @@
+[project]
+name = "cnn_v04_demo"
+version = "0.1.0"
+
+[simulation]
+model = "cnn_v04"
+width = 5
+height = 5
+dt = 0.1

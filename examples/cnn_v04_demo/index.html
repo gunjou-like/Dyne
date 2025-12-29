@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dyne v0.4.0: Weight Separation Demo</title>
+    <style>
+        body { background-color: #111; color: #eee; font-family: sans-serif; text-align: center; }
+        canvas { border: 1px solid #555; image-rendering: pixelated; width: 200px; height: 200px; margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Dyne v0.4.0: Weight Separation</h1>
+    <p>Loading <code>model_weights.bin</code> via fetch() -> Zero-Copy Wasm Init</p>
+    
+    <div>
+        <canvas id="canvas-out" width="5" height="5"></canvas>
+    </div>
+    <div id="status">Loading...</div>
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>

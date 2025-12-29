@@ -68,6 +68,13 @@ cd examples/cnn_demo
 dyne run
 ```
 
+#### cnn_v04_demo
+![cnn_demo](./assets/cnn_v04_demo.png)
+```Bash
+cd examples/cnn_v04_demo
+dyne run
+```
+
 ## 🏗️ The 3-Layer Architecture
 
 Dyne abstracts the complexity of distributed physics through three core layers:

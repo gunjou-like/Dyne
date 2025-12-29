@@ -14,7 +14,8 @@ SOLVER_MAP = {
     "heat_equation": "heat-equation",
     "lorenz_ode": "lorenz-ode",
     "generated_mlp": "generated-mlp",
-    "cnn_model": "generated-cnn"
+    "cnn_model": "generated-cnn",
+    "cnn_v04": "cnn-v04"
 }
 
 @click.group()
