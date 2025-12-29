@@ -9,7 +9,7 @@ It orchestrates these "Physics Containers" across heterogeneous clusters (Browse
 
 ## ⚡ Quickstart 
 
-### v0.3.2
+### v0.3.3
 Prerequisites
 - Rust (latest stable)
 
@@ -61,6 +61,12 @@ cd examples/onnx_demo
 dyne run
 ```
 
+#### cnn_demo
+![cnn_demo](./assets/cnn_demo.png)
+```Bash
+cd examples/cnn_demo
+dyne run
+```
 
 ## 🏗️ The 3-Layer Architecture
 
