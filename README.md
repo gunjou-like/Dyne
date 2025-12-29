@@ -9,7 +9,7 @@ It orchestrates these "Physics Containers" across heterogeneous clusters (Browse
 
 ## ⚡ Quickstart 
 
-### v0.3.3
+### v0.4.0
 Prerequisites
 - Rust (latest stable)
 
