@@ -6,6 +6,7 @@ members = [
     "solvers/heat-equation", "solvers/lorenz-ode", # <--- 追加
     "solvers/lorenz-ode",
     "solvers/generated-mlp",
+    "solvers/generated-cnn",
 ]
 resolver = "2"
 
