@@ -1,0 +1,9 @@
+[project]
+name = "split_demo"
+version = "0.1.0"
+
+[simulation]
+model = "split_wave"
+width = 100
+height = 1
+dt = 0.01

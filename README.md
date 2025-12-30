@@ -9,7 +9,7 @@ It orchestrates these "Physics Containers" across heterogeneous clusters (Browse
 
 ## ⚡ Quickstart 
 
-### v0.4.1
+### v0.4.2
 Prerequisites
 - Rust (latest stable)
 
@@ -79,6 +79,13 @@ dyne run
 ![fno_demo](./assets/fno_demo.png)
 ```Bash
 cd examples/fno_demo
+dyne run
+```
+
+#### split_demo
+![split_demo](./assets/split_demo.png)
+```Bash
+cd examples/split_demo
 dyne run
 ```
 

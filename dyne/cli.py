@@ -16,7 +16,8 @@ SOLVER_MAP = {
     "generated_mlp": "generated-mlp",
     "cnn_model": "generated-cnn",
     "cnn_v04": "cnn-v04",
-    "fno_model": "fno-v0"
+    "fno_model": "fno-v0",
+    "split_wave": "split-wave"
 }
 
 @click.group()

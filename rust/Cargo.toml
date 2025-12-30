@@ -9,6 +9,7 @@ members = [
     "solvers/generated-cnn",
     "solvers/cnn-v04",
     "solvers/fno-v0",
+    "solvers/split-wave",
 ]
 resolver = "2"
 
