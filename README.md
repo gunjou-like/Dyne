@@ -83,7 +83,7 @@ dyne run
 ```
 
 #### split_demo
-![split_demo](./assets/split_demo.png)
+![split_demo](./assets/split_demo.gif)
 ```Bash
 cd examples/split_demo
 dyne run
