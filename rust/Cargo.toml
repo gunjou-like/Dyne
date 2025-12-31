@@ -10,6 +10,13 @@ members = [
     "solvers/cnn-v04",
     "solvers/fno-v0",
     "solvers/split-wave",
+    "solvers/cnn-quantized",
 ]
 resolver = "2"
 
+[workspace.dependencies]
+dyne-core = { path = "./dyne-core" }
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
+rustfft = "6.1"
+half = "2.3" # <--- 追加: f16サポート

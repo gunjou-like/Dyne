@@ -1,0 +1,9 @@
+[project]
+name = "quantized_demo"
+version = "0.1.0"
+
+[simulation]
+model = "cnn_quantized"
+width = 5
+height = 5
+dt = 0.1

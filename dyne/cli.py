@@ -17,7 +17,8 @@ SOLVER_MAP = {
     "cnn_model": "generated-cnn",
     "cnn_v04": "cnn-v04",
     "fno_model": "fno-v0",
-    "split_wave": "split-wave"
+    "split_wave": "split-wave",
+    "cnn_quantized": "cnn-quantized"
 }
 
 @click.group()
