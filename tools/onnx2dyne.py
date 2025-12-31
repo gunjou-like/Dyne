@@ -4,14 +4,15 @@ import os
 import argparse
 from onnx import numpy_helper
 
-# --- Rust テンプレート (v0.4 Weight Separation版) ---
+# --- Rust Template (v0.4.3: Quantized Storage f16) ---
+# 【重要】Pythonの.format()を使うため、Rustの波括弧はすべて {{ }} にエスケープしています
 RUST_TEMPLATE = """
 use wasm_bindgen::prelude::*;
 use dyne_core::{{DyneEngine, ModelCategory}};
+use half::f16;
 
 #[wasm_bindgen]
 pub struct TranspiledSolver {{
-    // 重みデータ全体を保持するフラットなベクタ
     weights: Vec<f32>,
 }}
 
@@ -19,7 +20,7 @@ impl DyneEngine for TranspiledSolver {{
     fn step(&mut self, input: &[f32]) -> Vec<f32> {{
         let mut x = input.to_vec();
         
-        // --- 推論ロジック ---
+        // --- Inference Logic ---
 {inference_code}
         
         x
@@ -32,17 +33,29 @@ impl DyneEngine for TranspiledSolver {{
     fn get_boundary(&self) -> Vec<f32> {{ vec![] }}
 
     fn get_config(&self) -> String {{
-        "Transpiled ONNX Model (v0.4: Binary Weights)".to_string()
+        "Transpiled Model (v0.4.3: f16 Storage)".to_string()
     }}
 }}
 
 #[wasm_bindgen]
 impl TranspiledSolver {{
-    // コンストラクタ: JSからFloat32Arrayを受け取る
+    // コンストラクタ: JSからは Uint8Array (バイト列) を受け取る
     #[wasm_bindgen(constructor)]
-    pub fn new(weights_ptr: &[f32]) -> Self {{
+    pub fn new(weights_bytes: &[u8]) -> Self {{
+        // f16 (2 bytes) -> f32 (4 bytes) Dequantization
+        let count = weights_bytes.len() / 2;
+        let mut weights = Vec::with_capacity(count);
+        
+        // Little Endianで解釈
+        for i in 0..count {{
+            let b0 = weights_bytes[2*i];
+            let b1 = weights_bytes[2*i+1];
+            let val = f16::from_le_bytes([b0, b1]);
+            weights.push(val.to_f32());
+        }}
+
         Self {{
-            weights: weights_ptr.to_vec(),
+            weights,
         }}
     }}
     
@@ -55,7 +68,7 @@ impl TranspiledSolver {{
     }}
 }}
 
-// --- Helper Functions ---
+// --- Helper Functions (Compute is f32) ---
 
 fn relu(input: &mut [f32]) {{
     for x in input.iter_mut() {{
@@ -65,15 +78,14 @@ fn relu(input: &mut [f32]) {{
 
 fn conv2d(
     input: &[f32], 
-    all_weights: &[f32], // 全重みデータ
-    w_start: usize, w_end: usize, // Weightの範囲
-    b_start: usize, b_end: usize, // Biasの範囲
+    all_weights: &[f32],
+    w_start: usize, w_end: usize,
+    b_start: usize, b_end: usize,
     in_c: usize, out_c: usize, 
     h: usize, w: usize,
     k_h: usize, k_w: usize,
     pad: usize, stride: usize
 ) -> Vec<f32> {{
-    // スライス切り出し
     let weight = &all_weights[w_start..w_end];
     let bias = if b_end > b_start {{ &all_weights[b_start..b_end] }} else {{ &[] }};
 
@@ -99,7 +111,6 @@ fn conv2d(
 
                             if cur_h >= 0 && cur_h < h as isize && cur_w >= 0 && cur_w < w as isize {{
                                 let input_idx = ic * (h * w) + (cur_h as usize) * w + (cur_w as usize);
-                                // Weight index within the slice
                                 let weight_idx = oc * (in_c * k_h * k_w) + ic * (k_h * k_w) + kh * k_w + kw;
                                 sum += input[input_idx] * weight[weight_idx];
                             }}
@@ -150,7 +161,7 @@ crate-type = ["cdylib", "rlib"]
 wasm-bindgen = "0.2"
 console_error_panic_hook = "0.1"
 dyne-core = {{ path = "../../dyne-core" }}
-web-sys = {{ version = "0.3", features = ["console"] }}
+half = "2.3"
 """
 
 def get_attr(node, attr_name, default=None):
@@ -162,18 +173,15 @@ def get_attr(node, attr_name, default=None):
                 return attr.i
     return default
 
-def compile_onnx_v04(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
+def compile_onnx_quantized(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
     model = onnx.load(onnx_path)
     graph = model.graph
     
-    # 1. 重みデータの収集と結合
-    weights_map = {} # name -> numpy array
+    weights_map = {}
     for tensor in graph.initializer:
         weights_map[tensor.name] = numpy_helper.to_array(tensor).astype(np.float32)
     
-    # バイナリバッファ
     binary_blob = []
-    # オフセット管理: name -> (start_idx, end_idx)
     offset_map = {} 
     current_offset = 0
 
@@ -188,11 +196,9 @@ def compile_onnx_v04(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
         current_offset = end
         return start, end
 
-    # 2. 推論コード生成と重み登録
     inference_code = []
     current_h = input_h
     current_w = input_w
-    current_c = 1 
     
     layer_count = 0
     
@@ -200,8 +206,6 @@ def compile_onnx_v04(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
         if node.op_type == "Conv":
             w_name = node.input[1]
             w_arr = weights_map[w_name]
-            
-            # バイナリに追加 (未登録なら)
             if w_name not in offset_map:
                 append_weight(w_name, w_arr)
             w_start, w_end = offset_map[w_name]
@@ -219,7 +223,8 @@ def compile_onnx_v04(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
             strides = get_attr(node, "strides", [1, 1])
             stride_val = strides[0]
             
-            # 生成コード: オフセット値を直接埋め込む
+            # Pythonのf-stringを使うため、Rustの波括弧は {{ }} にエスケープ
+            # ただしここでは変数展開だけが目的なので、外側は三重引用符で囲む
             code = f"""
         // Conv Layer {layer_count}
         x = conv2d(&x, &self.weights, 
@@ -231,7 +236,6 @@ def compile_onnx_v04(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
             
             current_h = (current_h + 2 * pad_val - k_h) // stride_val + 1
             current_w = (current_w + 2 * pad_val - k_w) // stride_val + 1
-            current_c = out_c
             layer_count += 1
             
         elif node.op_type == "Gemm":
@@ -250,11 +254,6 @@ def compile_onnx_v04(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
 
             out_dim, in_dim = w_arr.shape
             
-            # Flatten if needed (簡易判定: 前段がConvならFlatten扱い)
-            if current_h > 1 or current_w > 1:
-                # 本来はReshapeノードなどをパースすべきだが、簡易的に対応
-                pass 
-
             code = f"""
         // Dense Layer {layer_count}
         x = dense(&x, &self.weights,
@@ -267,37 +266,34 @@ def compile_onnx_v04(onnx_path, output_dir, crate_name, input_h=5, input_w=5):
         elif node.op_type == "Relu":
             inference_code.append("        relu(&mut x);")
 
-    # 3. ファイル書き出し
+    # Output
     os.makedirs(output_dir, exist_ok=True)
     src_dir = os.path.join(output_dir, "src")
     os.makedirs(src_dir, exist_ok=True)
     
-    # Rust Source
-    rust_code = RUST_TEMPLATE.format(
-        inference_code="\n".join(inference_code),
-    )
+    # RUST_TEMPLATE 内の {inference_code} を置換
     with open(os.path.join(src_dir, "lib.rs"), "w", encoding="utf-8") as f:
-        f.write(rust_code)
+        f.write(RUST_TEMPLATE.format(inference_code="\n".join(inference_code)))
         
-    # Cargo.toml
     with open(os.path.join(output_dir, "Cargo.toml"), "w", encoding="utf-8") as f:
         f.write(TOML_TEMPLATE.format(crate_name=crate_name))
     
-    # Binary Blob (.bin)
+    # --- Quantization Logic ---
     bin_path = os.path.join(output_dir, "model_weights.bin")
-    # float32配列をバイト列に変換して保存
+    # f32 -> f16 変換して保存
     np_blob = np.array(binary_blob, dtype=np.float32)
-    np_blob.tofile(bin_path)
+    print(f"📉 Quantizing {len(np_blob)} parameters to Float16...")
+    np_blob.astype(np.float16).tofile(bin_path)
         
     print(f"✅ Transpiled to: {output_dir}")
-    print(f"📦 Weights saved to: {bin_path} ({len(np_blob)*4} bytes)")
+    print(f"📦 Weights saved to: {bin_path} ({os.path.getsize(bin_path)} bytes)")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("onnx_file")
     parser.add_argument("output_dir")
-    parser.add_argument("--name", default="dyne-solver-generated")
+    parser.add_argument("--name", default="dyne-solver-quantized")
     parser.add_argument("--input_size", type=int, default=5)
     args = parser.parse_args()
     
-    compile_onnx_v04(args.onnx_file, args.output_dir, args.name, input_h=args.input_size, input_w=args.input_size)
+    compile_onnx_quantized(args.onnx_file, args.output_dir, args.name, input_h=args.input_size, input_w=args.input_size)
