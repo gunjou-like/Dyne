@@ -11,6 +11,7 @@ members = [
     "solvers/fno-v0",
     "solvers/split-wave",
     "solvers/cnn-quantized",
+    "solvers/embedded-test",
 ]
 resolver = "2"
 

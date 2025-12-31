@@ -1,0 +1,15 @@
+[package]
+name = "embedded-test"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# wee_alloc = "0.4.5"  <-- コメントアウトまたは削除
+
+[profile.release]
+panic = "abort"
+opt-level = "z"
+lto = true
