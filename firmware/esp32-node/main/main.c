@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -8,100 +9,124 @@
 #include "wasm3.h"
 #include "m3_env.h"
 
-// 生成したヘッダー (Wasmバイナリ)
-#include "test_wasm.h"
+// 物理エンジンのヘッダー
+#include "dyne_wasm.h"
 
-static const char *TAG = "DYNE_NODE";
+static const char *TAG = "DYNE_PHYSICS";
 
-// Wasm3が使う内部スタック（WebAssemblyの実行用）
 #define WASM_STACK_SIZE 4096
-
-// ★修正点: FreeRTOSタスク自体のスタックサイズを大幅に増やす (32KB)
-// これが足りないとParseModuleで落ちます
 #define TASK_STACK_SIZE 32768
+
+// コンソールに波の高さをグラフ表示するヘルパー関数
+void print_wave_ascii(float* data, int size) {
+    char buf[256];
+    int buf_idx = 0;
+    
+    // 全データを表示すると多すぎるので、4つ飛ばしで間引き表示
+    for (int i = 0; i < size; i += 4) {
+        if (buf_idx >= 250) break; // バッファオーバーラン防止
+
+        float val = data[i];
+        char c = '_';
+        if (val > 0.8) c = '#';
+        else if (val > 0.6) c = '=';
+        else if (val > 0.4) c = '-';
+        else if (val > 0.2) c = '.';
+        
+        buf[buf_idx++] = c;
+    }
+    buf[buf_idx] = '\0';
+    
+    // 中央付近の生データも少し表示
+    printf("[%s] Center: %.3f\n", buf, data[size/2]);
+}
 
 void wasm_task(void *arg)
 {
-    ESP_LOGI(TAG, "=== Dyne Node Booting (Task Stack: %d bytes) ===", TASK_STACK_SIZE);
+    ESP_LOGI(TAG, "=== Dyne Physics Engine Starting ===");
 
-    // 1. Wasm3 環境初期化
-    ESP_LOGI(TAG, "Initializing Wasm3...");
+    // 1. 初期化
     IM3Environment env = m3_NewEnvironment();
-    if (!env) { ESP_LOGE(TAG, "m3_NewEnvironment failed"); vTaskDelete(NULL); return; }
-
     IM3Runtime runtime = m3_NewRuntime(env, WASM_STACK_SIZE, NULL);
-    if (!runtime) { ESP_LOGE(TAG, "m3_NewRuntime failed"); vTaskDelete(NULL); return; }
-
-    // 2. モジュールロード
-    ESP_LOGI(TAG, "Parsing Wasm Module (%d bytes)...", wasm_blob_len);
     IM3Module module;
-    M3Result result = m3_ParseModule(env, &module, wasm_blob, wasm_blob_len);
-    if (result) { ESP_LOGE(TAG, "m3_ParseModule: %s", result); vTaskDelete(NULL); return; }
+    
+    M3Result result = m3_ParseModule(env, &module, dyne_wasm, dyne_wasm_len);
+    if (result) { ESP_LOGE(TAG, "Parse: %s", result); vTaskDelete(NULL); return; }
 
     result = m3_LoadModule(runtime, module);
-    if (result) { ESP_LOGE(TAG, "m3_LoadModule: %s", result); vTaskDelete(NULL); return; }
+    if (result) { ESP_LOGE(TAG, "Load: %s", result); vTaskDelete(NULL); return; }
 
-    ESP_LOGI(TAG, "Module Loaded!");
+    ESP_LOGI(TAG, "Module Loaded! (%d bytes)", dyne_wasm_len);
 
-    // 3. 関数を探す
-    IM3Function f_alloc, f_step;
+    // 2. 関数検索
+    IM3Function f_init, f_step, f_get_size;
+    m3_FindFunction(&f_init, runtime, "init");
+    m3_FindFunction(&f_step, runtime, "step");
+    m3_FindFunction(&f_get_size, runtime, "get_size");
+
+    if (!f_init || !f_step || !f_get_size) {
+        ESP_LOGE(TAG, "Functions not found!");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    // 3. サイズ取得 (ここを修正しました)
+    uint64_t grid_size_u64 = 0;
+    m3_Call(f_get_size, 0, NULL);
     
-    result = m3_FindFunction(&f_alloc, runtime, "alloc");
-    if (result) { ESP_LOGE(TAG, "Function 'alloc' not found: %s", result); vTaskDelete(NULL); return; }
+    // ★修正点: ポインタの配列に入れてから渡す
+    const void* size_ret_ptrs[] = { &grid_size_u64 };
+    m3_GetResults(f_get_size, 1, size_ret_ptrs);
     
-    result = m3_FindFunction(&f_step, runtime, "step");
-    if (result) { ESP_LOGE(TAG, "Function 'step' not found: %s", result); vTaskDelete(NULL); return; }
+    int grid_size = (int)grid_size_u64;
+    ESP_LOGI(TAG, "Grid Size: %d", grid_size);
 
-    // 4. 実行テスト
-    // (A) メモリ確保: alloc(10)
-    const char* i_argv[1] = { "10" }; 
-    result = m3_Call(f_alloc, 1, (const void**)i_argv);
-    if (result) { ESP_LOGE(TAG, "Call alloc: %s", result); vTaskDelete(NULL); return; }
+    // 4. 初期化 (init実行) -> 初期状態のポインタ取得
+    uint32_t data_offset = 0;
+    m3_Call(f_init, 0, NULL);
     
-    uint32_t data_ptr_offset = 0;
-    const void* ret_ptrs[] = { &data_ptr_offset };
-    m3_GetResults(f_alloc, 1, ret_ptrs);
+    // ここも同様に配列経由で渡す (前回からここは合っていました)
+    const void* data_ret_ptrs[] = { &data_offset };
+    m3_GetResults(f_init, 1, data_ret_ptrs);
+    
+    ESP_LOGI(TAG, "Data Buffer Offset: %ld", data_offset);
 
-    ESP_LOGI(TAG, "Allocated memory at offset: %ld", data_ptr_offset);
-
-    // (B) データ書き込み
+    // Wasmメモリへのアクセスポインタ取得
     uint32_t mem_size = 0;
-    uint8_t* wasm_mem = m3_GetMemory(runtime, &mem_size, 0);
-    float* host_data_ptr = (float*)(wasm_mem + data_ptr_offset);
-
-    printf("Input Data:  ");
-    for(int i=0; i<10; i++){
-        host_data_ptr[i] = (float)i;
-        printf("%.1f ", host_data_ptr[i]);
-    }
-    printf("\n");
-
-    // (C) 計算実行: step(ptr, len)
-    char ptr_str[16];
-    char len_str[16];
-    sprintf(ptr_str, "%ld", data_ptr_offset);
-    sprintf(len_str, "%d", 10);
-    const char* step_argv[2] = { ptr_str, len_str };
-
-    ESP_LOGI(TAG, "Running 'step'...");
-    result = m3_Call(f_step, 2, (const void**)step_argv);
-    if (result) { ESP_LOGE(TAG, "Call step: %s", result); vTaskDelete(NULL); return; }
-
-    // (D) 結果確認
-    printf("Output Data: ");
-    for(int i=0; i<10; i++){
-        printf("%.1f ", host_data_ptr[i]);
-    }
-    printf("\n");
+    uint8_t* base_mem = m3_GetMemory(runtime, &mem_size, 0);
     
-    ESP_LOGI(TAG, "=== Test Complete! ===");
+    // オフセットがメモリ範囲内かチェック
+    if (data_offset >= mem_size) {
+        ESP_LOGE(TAG, "Invalid offset: %ld (MemSize: %ld)", data_offset, mem_size);
+        vTaskDelete(NULL);
+        return;
+    }
 
-    // タスク終了
+    float* wave_data = (float*)(base_mem + data_offset);
+
+    ESP_LOGI(TAG, "Simulation Start! (Gaussian Pulse)");
+
+    // 5. メインループ (50ステップ実行)
+    for (int t = 0; t < 50; t++) {
+        // Rustのステップ関数を実行
+        result = m3_Call(f_step, 0, NULL);
+        if (result) {
+            ESP_LOGE(TAG, "Step Error: %s", result);
+            break;
+        }
+
+        // 結果を表示
+        print_wave_ascii(wave_data, grid_size);
+        
+        // 少しウェイトを入れて見やすくする (50ms)
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+
+    ESP_LOGI(TAG, "=== Simulation Complete ===");
     vTaskDelete(NULL);
 }
 
 void app_main(void)
 {
-    // メインの処理を、十分なスタックを持つ別タスクとして起動する
     xTaskCreate(wasm_task, "wasm_task", TASK_STACK_SIZE, NULL, 5, NULL);
 }
