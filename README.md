@@ -1,10 +1,40 @@
 # Dyne: Universal Physics Container & Distributed Runtime
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Rust](https://img.shields.io/badge/built_with-Rust-orange.svg)
+![WASM](https://img.shields.io/badge/target-WebAssembly-purple.svg)
+![Status](https://img.shields.io/badge/status-Active_Development-green.svg)
+
 **Deploy any Physics, Anywhere.**
 
 Dyne is a lightweight toolchain that turns physics models—whether **Physics-Informed Neural Networks (PINNs)**, **Neural Operators**, or classical **Numerical Solvers**—into portable WebAssembly (WASM) actors.
 
 It orchestrates these "Physics Containers" across heterogeneous clusters (Browsers, ESP32/IoT, Edge Servers), creating a unified computing mesh where devices synchronize boundary conditions in real-time.
+
+![split_demo](./assets/split_demo.gif)
+
+---
+
+## 🏗️ Architecture
+
+Dyne abstracts the complexity of distributed physics through a modular **Compiler-Runtime** architecture.
+
+```mermaid
+flowchart TD
+    subgraph "Development Env"
+        Py["Python Models<br/>(PyTorch/JAX)"] -->|Dyne Compiler| WASM["WASM Actor<br/>(.wasm)"]
+        Rust["Rust Solvers"] -->|Dyne Compiler| WASM
+    end
+
+    subgraph "Dyne Runtime (Distributed Mesh)"
+        WASM -->|Deploy| Browser["Browser Node<br/>(Viz & Compute)"]
+        WASM -->|Deploy| Edge["Edge Node<br/>(Raspberry Pi / Linux)"]
+        WASM -->|Deploy| MCU["MCU Node<br/>(ESP32 / Embedded)"]
+        
+        Browser <-->|Boundary Sync Protocol| Edge
+        Edge <-->|Boundary Sync Protocol| MCU
+    end
+```
 
 
 ## ⚡ Quickstart 
